@@ -1,0 +1,89 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: user-service-register
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/register
+          filters:
+            - StripPrefix=1
+
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthenticationFilter
+
+        - id: restaurant-service
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/v1/restaurants/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthenticationFilter
+
+        - id: menu-service
+          uri: lb://menu-service
+          predicates:
+            - Path=/api/v1/menu/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthenticationFilter
+
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/v1/orders/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthenticationFilter
+
+        - id: admin-service
+          uri: lb://admin-service
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - StripPrefix=1
+            - name: JwtAuthenticationFilter
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret: your-256-bit-secret-key-here-make-it-long-and-secure-in-production
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always 
